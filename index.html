@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="description" content="Канат — браузерная игра «перетягивание каната» с выносливостью, ритмом и рывками. Играй против компьютера или вдвоём на одном устройстве.">
+  <title>Канат — перетягивание каната онлайн</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230f172a'/%3E%3Cpath d='M6 34 Q32 44 58 34' stroke='%23c9a46b' stroke-width='8' fill='none' stroke-linecap='round'/%3E%3Cpath d='M32 38 V16 L46 21 L32 27Z' fill='%23ff3d57'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ГЛАВНОЕ МЕНЮ -->
+  <section id="screen-menu" class="screen active">
+    <header class="hero">
+      <div class="logo">🪢</div>
+      <h1>КАНАТ</h1>
+      <p class="tagline">Перетягивание каната: сила, ритм и холодный расчёт</p>
+      <p class="profile-line">Ты играешь как <b id="menu-player-name">Игрок</b> · <a href="#" id="link-rename">сменить имя</a></p>
+    </header>
+
+    <div class="mode-grid">
+      <button class="mode-card" id="btn-play-bot">
+        <span class="mode-icon">🤖</span>
+        <span class="mode-title">Против компьютера</span>
+        <span class="mode-desc">Бот играет по тем же правилам: тратит силы, отдыхает и выбирает момент для рывка</span>
+        <span class="mode-opts" id="difficulty-opts">
+          <span class="chip" data-diff="easy">Лёгкий</span>
+          <span class="chip" data-diff="medium">Средний</span>
+          <span class="chip" data-diff="hard">Сложный</span>
+        </span>
+      </button>
+      <button class="mode-card" id="btn-play-pvp">
+        <span class="mode-icon">👥</span>
+        <span class="mode-title">Вдвоём на одном устройстве</span>
+        <span class="mode-desc">Клавиатура: A / S / D против J / K / L. На телефоне — кнопки по краям экрана</span>
+      </button>
+      <button class="mode-card" id="btn-play-rhythm">
+        <span class="mode-icon">🥁</span>
+        <span class="mode-title">Ритм-тренировка</span>
+        <span class="mode-desc">20 секунд — попади в ритм как можно больше раз. Рекорд сохраняется</span>
+      </button>
+      <button class="mode-card" id="btn-tutorial">
+        <span class="mode-icon">🎓</span>
+        <span class="mode-title">Обучение</span>
+        <span class="mode-desc">Четыре коротких шага: тяг, ритм, упор и рывок</span>
+      </button>
+    </div>
+
+    <div class="menu-options">
+      <label>Серия
+        <select id="opt-bestof">
+          <option value="1">1 матч</option>
+          <option value="3">до 2 побед (из 3)</option>
+          <option value="5">до 3 побед (из 5)</option>
+        </select>
+      </label>
+      <label>Длительность
+        <select id="opt-duration">
+          <option value="45">45 с</option>
+          <option value="60">60 с</option>
+          <option value="90">90 с</option>
+        </select>
+      </label>
+      <label class="check"><input type="checkbox" id="opt-sound" checked> Звук</label>
+    </div>
+
+    <nav class="menu-links">
+      <button class="link-btn" id="btn-rules">📜 Правила</button>
+      <button class="link-btn" id="btn-stats">📊 Статистика</button>
+      <button class="link-btn" id="btn-shop">🎨 Оформление</button>
+      <button class="link-btn" id="btn-settings">⚙️ Настройки</button>
+    </nav>
+    <footer class="menu-footer">Narxoz Incubator 2026 · задание «Перетягивание каната»</footer>
+  </section>
+
+  <!-- ИГРА -->
+  <section id="screen-game" class="screen">
+    <div class="hud">
+      <div class="hud-side hud-left">
+        <div class="hud-name" id="hud-name-L">Игрок</div>
+        <div class="bar stamina"><div class="bar-fill" id="stamina-L"></div><span class="bar-label" id="stamina-L-txt">100</span></div>
+        <div class="bar surge"><div class="bar-fill" id="surge-L"></div><span class="bar-label">рывок</span></div>
+        <div class="hud-state" id="state-L"></div>
+      </div>
+      <div class="hud-center">
+        <div class="hud-timer" id="hud-timer">60</div>
+        <div class="hud-sub" id="hud-sub">до конца матча</div>
+        <div class="hud-series" id="hud-series"></div>
+      </div>
+      <div class="hud-side hud-right">
+        <div class="hud-name" id="hud-name-R">Компьютер</div>
+        <div class="bar stamina"><div class="bar-fill" id="stamina-R"></div><span class="bar-label" id="stamina-R-txt">100</span></div>
+        <div class="bar surge"><div class="bar-fill" id="surge-R"></div><span class="bar-label">рывок</span></div>
+        <div class="hud-state" id="state-R"></div>
+      </div>
+    </div>
+
+    <div class="arena-wrap">
+      <canvas id="arena"></canvas>
+      <button class="btn ghost small exit-btn" id="btn-exit">✕ Выйти</button>
+      <div class="lead-bar"><div class="lead-marker" id="lead-marker"></div></div>
+      <div class="overlay" id="overlay-countdown"><div class="countdown-num" id="countdown-num">3</div></div>
+      <div class="overlay tutorial-box hidden" id="tutorial-box">
+        <div class="tutorial-step" id="tutorial-step">Шаг 1 из 4</div>
+        <div class="tutorial-text" id="tutorial-text"></div>
+        <div class="tutorial-progress"><div id="tutorial-progress-fill"></div></div>
+        <button class="btn small ghost" id="btn-tutorial-skip">Пропустить обучение</button>
+      </div>
+      <div class="overlay result hidden" id="overlay-result">
+        <div class="result-title" id="result-title">Победа!</div>
+        <div class="result-reason" id="result-reason"></div>
+        <table class="result-table" id="result-table"></table>
+        <div class="result-series" id="result-series"></div>
+        <div class="result-buttons">
+          <button class="btn primary" id="btn-rematch">Реванш</button>
+          <button class="btn" id="btn-next-round">Следующий раунд</button>
+          <button class="btn ghost" id="btn-to-menu">В меню</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="beat-wrap" id="beat-wrap">
+      <div class="beat-label">РИТМ — тяни, когда курсор в зелёной зоне (×1.6)</div>
+      <div class="beat-bar"><div class="beat-zone"></div><div class="beat-cursor" id="beat-cursor"></div></div>
+    </div>
+
+    <div class="controls" id="controls">
+      <div class="pad pad-L" id="pad-L">
+        <button class="pad-btn pull" data-side="L" data-action="pull"><span>ТЯНУТЬ</span><kbd>A</kbd></button>
+        <button class="pad-btn brace" data-side="L" data-action="brace"><span>УПОР</span><small>держать</small><kbd>S</kbd></button>
+        <button class="pad-btn surge" data-side="L" data-action="surge"><span>РЫВОК</span><kbd>D</kbd></button>
+      </div>
+      <div class="pad pad-R" id="pad-R">
+        <button class="pad-btn surge" data-side="R" data-action="surge"><span>РЫВОК</span><kbd>L</kbd></button>
+        <button class="pad-btn brace" data-side="R" data-action="brace"><span>УПОР</span><small>держать</small><kbd>K</kbd></button>
+        <button class="pad-btn pull" data-side="R" data-action="pull"><span>ТЯНУТЬ</span><kbd>J</kbd></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- МОДАЛКИ -->
+  <div class="modal hidden" id="modal-rules">
+    <div class="modal-box">
+      <h2>Правила</h2>
+      <div class="rules">
+        <p><b>Цель.</b> Перетянуть флажок на канате за линию соперника. Матч длится 60 секунд (настраивается). Если время вышло — побеждает тот, на чьей половине флажок. Если флажок почти по центру — овертайм 20 секунд с укороченной границей; если и тогда центр — ничья.</p>
+        <p><b>Тянуть (A / J).</b> Каждое нажатие — рывок за канат. Стоит 7 выносливости. Не чаще ~6 раз в секунду: удержание клавиши и «дребезг» не помогают.</p>
+        <p><b>Ритм.</b> Внизу бегает курсор. Тяг в зелёной зоне даёт ×1.6 силы. Ритм общий для обеих сторон — как крик «раз-два!» на площадке.</p>
+        <p><b>Упор (держать S / K).</b> Пока держишь — тянуть нельзя, но силы восстанавливаются втрое быстрее, а тяги соперника действуют на тебя лишь на 45%. Это способ передохнуть, не отдав канат.</p>
+        <p><b>Рывок (D / L).</b> Мощный тяг ×3, стоит 35 выносливости, перезарядка 4 секунды. Не проходит, если сил меньше 35. Рывок в ритм — самое сильное действие в игре.</p>
+        <p><b>Истощение.</b> Если выносливость упала до нуля, ты «выдохся»: тяги слабеют до 30%, пока не восстановишься до 20. Спамить бесполезно — надо отпустить кнопку или уйти в упор.</p>
+        <p><b>Тактика.</b> Не тяни без остановки. Тяни в ритм, копи силы для рывка, когда соперник выдохся, и уходи в упор, когда чувствуешь, что силы на исходе.</p>
+        <p><b>Управление на телефоне.</b> Большие кнопки под ареной: «Тянуть» — тап, «Упор» — удержание, «Рывок» — тап.</p>
+      </div>
+      <button class="btn primary modal-close">Понятно</button>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="modal-stats">
+    <div class="modal-box">
+      <h2>Статистика</h2>
+      <div id="stats-body"></div>
+      <h3>Последние матчи</h3>
+      <div id="history-body" class="history"></div>
+      <div class="row">
+        <button class="btn ghost small" id="btn-clear-data">Очистить данные</button>
+        <button class="btn primary modal-close">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="modal-settings">
+    <div class="modal-box">
+      <h2>Настройки</h2>
+      <label class="field">Твоё имя <input type="text" id="set-name" maxlength="16"></label>
+      <label class="field">Имя второго игрока <input type="text" id="set-p2name" maxlength="16"></label>
+      <p class="hint">Профиль хранится в этом браузере (localStorage). Онлайн-аккаунтов пока нет — см. README.</p>
+      <div class="row">
+        <button class="btn ghost modal-close">Отмена</button>
+        <button class="btn primary" id="btn-save-settings">Сохранить</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="modal-shop">
+    <div class="modal-box">
+      <h2>Оформление арены</h2>
+      <p class="hint">Косметика не влияет на силу или правила. <b>Тестовый режим оплаты:</b> реальные платежи не выполняются, «покупка» лишь помечает Pro в этом браузере.</p>
+      <div class="pro-status" id="pro-status"></div>
+      <div class="theme-grid" id="theme-grid"></div>
+      <div class="row">
+        <button class="btn" id="btn-buy-pro">Открыть Pro (тест)</button>
+        <button class="btn primary modal-close">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="modal-confirm">
+    <div class="modal-box small">
+      <p id="confirm-text"></p>
+      <div class="row">
+        <button class="btn ghost" id="confirm-no">Нет</button>
+        <button class="btn primary" id="confirm-yes">Да</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast hidden" id="toast"></div>
+</div>
+
+<script src="js/engine.js"></script>
+<script src="js/bot.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/input.js"></script>
+<script src="js/render.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
